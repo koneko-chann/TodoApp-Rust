@@ -1,63 +1,104 @@
-# Rust Yew Boilerplate
+# TodoApp – Rust + Yew Frontend
 
-This repository provides a boilerplate setup for building web applications using the Yew framework with Tailwind CSS. It allows users to quickly get started with their Yew projects without having to configure everything from scratch.
+> Frontend for https://github.com/koneko-chann/TodoApp-Rust  
+> Built with Yew, Tailwind CSS, and Trunk.
+
+## Overview
+
+This project is a modern single–page application that talks to the TodoApp-Rust backend.  
+It provides login/register screens, a todo dashboard with inline editing, filters, counters, and full CRUD operations.  
+The UI is written in Rust using Yew and compiled to WebAssembly.
 
 ## Features
 
-- **Yew**: Leverage the powerful Yew framework for building web applications in Rust.
-- **Tailwind CSS**: Utility-first CSS framework for rapid UI development.
-- **Client-Side Rendering (CSR)**: Configured for CSR for better performance and user experience.
-- **Yew Router**: Integrated Yew Router for seamless client-side routing.
+- 🔐 **Auth-aware routing** with guarded login/register pages.
+- ✅ **Todo management** (create, edit title, update status, delete).
+- 📊 **Live counters** showing total/completed/pending tasks.
+- 🎨 **Tailwind CSS** styling with responsive, dark-friendly design.
+- 🔁 **Yew Router** for routing + redirects (Counter/Home → Todo).
+- 🧰 **Auth context** storing tokens in `localStorage`.
+
+## Project Structure
+
+```
+src/
+├── components/        # Presentational widgets (e.g., Header)
+├── context/           # Auth context + provider
+├── screens/           # Page-level components (login, register, todo, etc.)
+├── styles/            # Tailwind output
+├── utils/             # Helpers
+└── main.rs            # Router + app entry
+```
+
+## Prerequisites
+
+- [Rust](https://www.rust-lang.org/tools/install) (latest stable)
+- `wasm32-unknown-unknown` target  
+  ```sh
+  rustup target add wasm32-unknown-unknown
+  ```
+- [Trunk](https://trunkrs.dev/#install) for serving/bundling  
+  ```sh
+  cargo install trunk
+  ```
+- Node.js + npm (only required if rebuilding Tailwind styles)
 
 ## Getting Started
 
-### Prerequisites
-
-- Rust: Install Rust from [rust-lang.org](https://www.rust-lang.org/)
-- wasm-pack: Install `wasm-pack` by following the instructions on [rustwasm.github.io](https://rustwasm.github.io/wasm-pack/installer/)
-
-### Installation
-
-##### Clone the repository:
+Clone the frontend:
 
 ```sh
-git clone https://github.com/hadihaider055/rust-yew-boilerplate.git
-cd rust-yew-boilerplate
+git clone https://github.com/koneko-chann/TodoApp-Rust.git
+cd TodoApp-Rust
 ```
 
-##### Install dependencies:
+Install Rust dependencies:
 
 ```sh
-cargo build
+cargo fetch
 ```
 
-##### Run the development server:
+Install Node dependencies (optional – Tailwind rebuild):
 
 ```sh
-trunk serve
+npm install
 ```
 
-> [!Note]  
-> Add option `--open` to open your default browser `trunk serve --open`.
+### Run in Development
+
+```sh
+trunk serve --open
+```
+
+Trunk watches Rust + CSS changes, rebuilds the Wasm bundle, and opens the app in your browser.
+
+### Backend API
+
+The frontend expects the TodoApp-Rust backend to be running locally:
+
+- `GET http://127.0.0.1:8080/api/v1/todo` for listing tasks.
+- `POST/PUT/DELETE http://127.0.0.1:8000/todo[...]` for CRUD operations.
+
+Make sure the backend server (from the linked repository) is running so the UI can load data.
+
+## Build for Production
+
+```sh
+trunk build --release
+```
+
+The optimized assets are emitted to `dist/`.
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request if you have any improvements or new features to add.
+1. Fork the repo & create feature branch.  
+2. Run `trunk fmt`/`cargo fmt` and ensure `trunk build` succeeds.  
+3. Submit a pull request describing the change.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
-## Contact
-
-For any inquiries, please contact [Hadi Haider](mailto:haiderhadi055@gmail.com).
-
-## Acknowledgements
-
-- [Yew](https://yew.rs/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Rust](https://www.rust-lang.org/)
+Distributed under the MIT License. See `LICENSE` for details.
 
 ---
 
-Made with ❤️ by [Hadi Haider](https://linkedin.com/in/hadi-haider)
+Made with ❤️ in Rust. Have fun hacking!
