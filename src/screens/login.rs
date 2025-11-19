@@ -5,7 +5,6 @@ use web_sys::{console, HtmlInputElement};
 use yew::{Callback, Html, TargetCast, function_component, html, use_context, use_state};
 use yew_router::prelude::use_navigator;
 use yew::events::{InputEvent, SubmitEvent};
-use crate::context::auth::AuthCtx;
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub struct LoginRequest {
@@ -65,7 +64,7 @@ pub fn login_screen() -> Html {
             let password_val = (*password).trim().to_string();
 
             if email_val.is_empty() || password_val.is_empty() {
-                error.set(Some("Email và mật khẩu không được để trống".into()));
+                error.set(Some("Username and password must not be empty".into()));
                 return;
             }
 
@@ -97,7 +96,7 @@ pub fn login_screen() -> Html {
                                             &format!("Login ok, token = {}", login_resp.token).into()
                                         );
 
-                                        success.set(Some("Đăng nhập thành công!".into()));
+                                        success.set(Some("Login successful!".into()));
 
                                         if let Ok(Some(storage)) =
                                             web_sys::window().unwrap().local_storage()
@@ -105,7 +104,6 @@ pub fn login_screen() -> Html {
                                             let _ = storage.set_item("auth_token", &login_resp.token);
                                         }
 
-                                       // trong LoginScreen sau khi nhận LoginResponse { token }
                                         if let Ok(Some(storage)) = web_sys::window().unwrap().local_storage() {
                                             let _ = storage.set_item("auth_token", &login_resp.token);
                                         }
@@ -123,14 +121,14 @@ pub fn login_screen() -> Html {
                                         console::log_1(
                                             &format!("Parse login response error: {:?}", e).into()
                                         );
-                                        error.set(Some("Không đọc được dữ liệu từ server".into()));
+                                        error.set(Some("Cannot parse data from server".into()));
                                     }
                                 }
                             } else if resp.status() == 401 {
-                                error.set(Some("Email hoặc mật khẩu không đúng".into()));
+                                error.set(Some("Username or password is incorrect".into()));
                             } else {
                                 error.set(Some(
-                                    format!("Đăng nhập thất bại, status: {}", resp.status())
+                                    format!("Login failed, status: {}", resp.status())
                                 ));
                             }
                         }
@@ -138,12 +136,12 @@ pub fn login_screen() -> Html {
                             console::log_1(
                                 &format!("Send login request error: {:?}", e).into()
                             );
-                            error.set(Some("Không thể kết nối tới server".into()));
+                            error.set(Some("Cannot connect to server".into()));
                         }
                     },
                     Err(e) => {
                         console::log_1(&format!("Build login request error: {:?}", e).into());
-                        error.set(Some("Lỗi tạo request".into()));
+                        error.set(Some("Error creating request".into()));
                     }
                 }
 
@@ -159,9 +157,9 @@ pub fn login_screen() -> Html {
             <div class="w-full max-w-md bg-gray-800 rounded-xl shadow-lg p-8">
                 // title
                 <div class="mb-6 text-center">
-                    <h1 class="text-3xl font-bold text-white mb-2">{ "Đăng nhập" }</h1>
+                    <h1 class="text-3xl font-bold text-white mb-2">{ "Login" }</h1>
                     <p class="text-gray-400 text-sm">
-                        { "Đăng nhập để sử dụng Todo Application" }
+                        { "Login to use the Todo Application" }
                     </p>
                 </div>
 
@@ -183,7 +181,7 @@ pub fn login_screen() -> Html {
                 <form onsubmit={handle_submit} class="space-y-4">
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-300">
-                            { "Email" }
+                            { "Username" }
                         </label>
                         <input
                             type="text"
@@ -197,7 +195,7 @@ pub fn login_screen() -> Html {
 
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-300">
-                            { "Mật khẩu" }
+                            { "Password" }
                         </label>
                         <input
                             type="password"
@@ -219,16 +217,16 @@ pub fn login_screen() -> Html {
                         class="w-full mt-2 px-4 py-2.5 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         if *loading {
-                            { "Đang đăng nhập..." }
+                            { "Logging in..." }
                         } else {
-                            { "Đăng nhập" }
+                            { "Login" }
                         }
                     </button>
                 </form>
 
                 // footer giống hình bạn gửi
                 <div class="mt-6 text-center text-sm text-gray-400">
-                    { "Chưa có tài khoản? " }
+                    { "Haven't an account? " }
                     <span class="text-blue-400 hover:underline cursor-pointer" onclick={
                         let navigator = navigator.clone();
                         Callback::from(move |_| {
@@ -238,7 +236,7 @@ pub fn login_screen() -> Html {
                         })
                     }
                         >
-                        { "Đăng ký" }
+                        { "Register" }
                     </span>
                 </div>
             </div>

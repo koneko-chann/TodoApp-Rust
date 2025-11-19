@@ -58,7 +58,7 @@ pub fn register_screen() -> Html {
             let password_val = (*password).trim().to_string();
 
             if email_val.is_empty() || password_val.is_empty() {
-                error.set(Some("Username và mật khẩu không được để trống".into()));
+                error.set(Some("Username and password must not be empty".into()));
                 return;
             }
 
@@ -85,15 +85,15 @@ pub fn register_screen() -> Html {
                         Ok(resp) => {
                             if resp.ok() {
                                 console::log_1(&"Register ok".into());
-                                success.set(Some("Đăng ký thành công!".into()));
+                                success.set(Some("Registration successful!".into()));
 
-                                // Sau 1 lúc hoặc ngay lập tức điều hướng sang Login
+                                // After a short delay (or immediately) navigate to Login
                                 if let Some(nav) = navigator {
                                     nav.push(&crate::Route::Login);
                                 }
                             } else {
                                 error.set(Some(
-                                    format!("Đăng ký thất bại, status: {}", resp.status())
+                                    format!("Registration failed, status: {}", resp.status())
                                 ));
                             }
                         }
@@ -101,12 +101,12 @@ pub fn register_screen() -> Html {
                             console::log_1(
                                 &format!("Send register request error: {:?}", e).into()
                             );
-                            error.set(Some("Không thể kết nối tới server".into()));
+                            error.set(Some("Unable to reach the server".into()));
                         }
                     },
                     Err(e) => {
                         console::log_1(&format!("Build register request error: {:?}", e).into());
-                        error.set(Some("Lỗi tạo request".into()));
+                        error.set(Some("Failed to build the request".into()));
                     }
                 }
 
@@ -115,7 +115,7 @@ pub fn register_screen() -> Html {
         })
     };
 
-    // Optional: handler bấm "Đăng nhập" để quay lại login
+    // Optional: handler for the "Log in" action to navigate back to login
     let handle_go_login = {
         let navigator = navigator.clone();
         Callback::from(move |_| {
@@ -132,9 +132,9 @@ pub fn register_screen() -> Html {
             <div class="w-full max-w-md bg-gray-800 rounded-xl shadow-lg p-8">
                 // title
                 <div class="mb-6 text-center">
-                    <h1 class="text-3xl font-bold text-white mb-2">{ "Đăng ký" }</h1>
+                    <h1 class="text-3xl font-bold text-white mb-2">{ "Register" }</h1>
                     <p class="text-gray-400 text-sm">
-                        { "Tạo tài khoản để sử dụng Todo Application" }
+                        { "Create an account to use the Todo Application" }
                     </p>
                 </div>
 
@@ -170,11 +170,11 @@ pub fn register_screen() -> Html {
 
                     <div>
                         <label class="block mb-1 text-sm font-medium text-gray-300">
-                            { "Mật khẩu" }
+                            { "Password" }
                         </label>
                         <input
                             type="password"
-                            placeholder="••••••••"
+                            placeholder="********"
                             value={(*password).clone()}
                             oninput={handle_password_change}
                             disabled={*loading}
@@ -192,20 +192,20 @@ pub fn register_screen() -> Html {
                         class="w-full mt-2 px-4 py-2.5 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         if *loading {
-                            { "Đang đăng ký..." }
+                            { "Registering..." }
                         } else {
-                            { "Đăng ký" }
+                            { "Register" }
                         }
                     </button>
                 </form>
 
                 <div class="mt-6 text-center text-sm text-gray-400">
-                    { "Đã có tài khoản? " }
+                    { "Already have an account? " }
                     <span
                         class="text-blue-400 hover:underline cursor-pointer"
                         onclick={handle_go_login}
                     >
-                        { "Đăng nhập" }
+                        { "Log in" }
                     </span>
                 </div>
             </div>

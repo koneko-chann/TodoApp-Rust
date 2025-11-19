@@ -76,12 +76,10 @@ fn App() -> Html {
     }
 
     html! {
-
-    
-       <BrowserRouter>
-                <Header class="bg-gray-900 p-4" disabled={false}  />
+            <BrowserRouter>
+                <Header class="bg-gray-900 p-4" disabled={false} />
                 <Switch<Route> render={switch} />
-        </BrowserRouter>
+            </BrowserRouter>
     }
 }
 
