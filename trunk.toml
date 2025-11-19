@@ -9,7 +9,7 @@ port = 3000
 [build]
 target = "index.html"
 dist = "dist"
-
+BACKEND_URL="http://152.42.190.191:8080"
 [[hooks]]
 stage = "build"
 command = "pwsh"

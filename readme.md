@@ -74,10 +74,14 @@ Trunk watches Rust + CSS changes, rebuilds the Wasm bundle, and opens the app in
 
 ### Backend API
 
-The frontend expects the TodoApp-Rust backend to be running locally:
+Set the backend origin via the `BACKEND_URL` environment variable before running Trunk
+(`BACKEND_URL=https://api.example.com trunk serve`) or place the value in a `.env`
+file (`BACKEND_URL="https://api.example.com"`).  
+If not provided, it falls back to `http://127.0.0.1:8080`, so with the default value the API
+endpoints look like:
 
 - `GET http://127.0.0.1:8080/api/v1/todo` for listing tasks.
-- `POST/PUT/DELETE http://127.0.0.1:8000/todo[...]` for CRUD operations.
+- `POST/PUT/DELETE http://127.0.0.1:8080/api/v1/todo[...]` for CRUD operations.
 
 Make sure the backend server (from the linked repository) is running so the UI can load data.
 

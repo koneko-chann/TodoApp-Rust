@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::{HtmlInputElement, InputEvent, SubmitEvent, console};
 use yew::{Callback, Html, TargetCast, function_component, html, use_effect_with, use_state};
+use crate::utils::api_url;
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub enum Status {
@@ -67,7 +68,8 @@ pub fn todo() -> Html {
             loading.set(true);
             spawn_local(async move {
                 console::log_1(&"Fetching todos from API...".into());
-                match Request::get("http://127.0.0.1:8080/api/v1/todo").header("Authorization", format!("Bearer {}", auth_token.unwrap_or_default()).as_str()).send().await {
+                let todos_url = api_url("api/v1/todo");
+                match Request::get(&todos_url).header("Authorization", format!("Bearer {}", auth_token.unwrap_or_default()).as_str()).send().await {
                     Ok(response) => match response.json::<Vec<TodoResponse>>().await {
                         Ok(api_response) => {
                             console::log_1(
@@ -121,7 +123,8 @@ pub fn todo() -> Html {
                 spawn_local(async move {
                     let new_todo = Todo { title: task_value, completed: false };
 
-                    match Request::post("http://127.0.0.1:8080/api/v1/todo")
+                    let create_url = api_url("api/v1/todo");
+                    match Request::post(&create_url)
                         .header("Content-Type", "application/json")
                         .header("Authorization", format!("Bearer {}", auth_token.unwrap_or_default()).as_str())
                         .json(&new_todo)
@@ -167,7 +170,8 @@ pub fn todo() -> Html {
 
             loading.set(true);
             spawn_local(async move {
-                match Request::delete(&format!("http://127.0.0.1:8080/api/v1/todo/{}", todo_id))
+                let delete_url = api_url(&format!("api/v1/todo/{}", todo_id));
+                match Request::delete(&delete_url)
                     .header("Authorization", format!("Bearer {}", auth_token.clone().unwrap_or_default()).as_str())
                     .send()
                     .await
@@ -206,7 +210,8 @@ pub fn todo() -> Html {
             spawn_local(async move {
                 let auth_token = auth_token.clone();
                 console::log_1(&"Fetching current todo status...".into());
-                match Request::get(&format!("http://127.0.0.1:8080/api/v1/todo/{}", todo_id)).header("Authorization", format!("Bearer {}", auth_token.clone().unwrap_or_default()).as_str())
+                let todo_url = api_url(&format!("api/v1/todo/{}", todo_id));
+                match Request::get(&todo_url).header("Authorization", format!("Bearer {}", auth_token.clone().unwrap_or_default()).as_str())
                     .send()
                     .await
                 {
@@ -234,7 +239,8 @@ pub fn todo() -> Html {
                             };
 
                             console::log_1(&"Sending PUT request...".into());
-                            match Request::put(&format!("http://127.0.0.1:8080/api/v1/todo"))
+                            let update_url = api_url("api/v1/todo");
+                            match Request::put(&update_url)
                                 .header("Content-Type", "application/json")
                                 .header("Authorization", format!("Bearer {}", auth_token.unwrap_or_default()).as_str())
                                 .json(&update_data)
@@ -334,7 +340,8 @@ pub fn todo() -> Html {
 
                     loading.set(true);
                     spawn_local(async move {
-                        match Request::put(&format!("http://127.0.0.1:8080/api/v1/todo"))
+                        let update_url = api_url("api/v1/todo");
+                        match Request::put(&update_url)
                             .header("Content-Type", "application/json")
                             .header("Authorization", format!("Bearer {}", auth_token.clone().unwrap_or_default()).as_str())
                             .json(&update_data)

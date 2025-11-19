@@ -1,4 +1,5 @@
 use gloo_net::http::Request;
+use crate::utils::api_url;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::{console, HtmlInputElement};
@@ -83,7 +84,8 @@ pub fn login_screen() -> Html {
                     password: password_val,
                 };
 
-                match Request::post("http://127.0.0.1:8080/api/v1/login")
+                let login_url = api_url("api/v1/login");
+                match Request::post(&login_url)
                     .header("Content-Type", "application/json")
                     .json(&body)
                 {

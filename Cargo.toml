@@ -9,6 +9,7 @@ repository = "https://github.com/hadihaider055/yew-boilerplate.git"
 categories = ["command-line-utilities", "Web programming"]
 keywords = ["tailwind", "yew", "cli", "css", "wasm", "html", "boilerplate"]
 homepage = "https://github.com/hadihaider055/yew-boilerplate.git"
+build = "build.rs"
 
 [dependencies]
 gloo-net = "0.6.0"
@@ -20,3 +21,6 @@ wasm-bindgen-futures = "0.4.55"
 web-sys = "0.3.82"
 jsonwebtoken = { version = "10", features = ["rust_crypto"] }
 chrono="0.4.26"
+
+[build-dependencies]
+dotenvy = "0.15.0"

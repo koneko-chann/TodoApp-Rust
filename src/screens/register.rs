@@ -5,6 +5,7 @@ use web_sys::{console, HtmlInputElement};
 use yew::{Callback, Html, TargetCast, function_component, html, use_state};
 use yew_router::prelude::use_navigator;
 use yew::events::{InputEvent, SubmitEvent};
+use crate::utils::api_url;
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub struct RegisterRequest {
@@ -72,12 +73,13 @@ pub fn register_screen() -> Html {
             let navigator = navigator.clone();
 
             spawn_local(async move {
+                let register_url = api_url("api/v1/register");
                 let body = RegisterRequest {
                     username: email_val,
                     password: password_val,
                 };
 
-                match Request::post("http://127.0.0.1:8080/api/v1/register")
+                match Request::post(&register_url)
                     .header("Content-Type", "application/json")
                     .json(&body)
                 {
