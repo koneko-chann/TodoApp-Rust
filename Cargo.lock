@@ -1718,6 +1718,7 @@ dependencies = [
  "chrono",
  "dotenvy",
  "gloo-net 0.6.0",
+ "js-sys",
  "jsonwebtoken",
  "serde",
  "wasm-bindgen-futures",

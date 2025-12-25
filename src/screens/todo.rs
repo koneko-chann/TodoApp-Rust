@@ -1,6 +1,7 @@
 use gloo_net::http::Request;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
+use js_sys::Date;
 use web_sys::{HtmlInputElement, InputEvent, SubmitEvent, console};
 use yew::{Callback, Html, TargetCast, function_component, html, use_effect_with, use_state};
 use crate::utils::api_url;
@@ -45,6 +46,7 @@ pub fn todo() -> Html {
     let input_value = use_state(|| String::new());
     let edit_todo_id = use_state(|| Option::<i64>::None);
     let edit_todo_text = use_state(|| String::new());
+    let date_filter = use_state(|| Option::<String>::None);
     let loading = use_state(|| false);
     let auth_token = if let Ok(Some(storage)) = web_sys::window().unwrap().local_storage() {
         storage.get_item("auth_token").ok().flatten()
@@ -155,6 +157,43 @@ pub fn todo() -> Html {
         Callback::from(move |e: InputEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
             input_value.set(input.value());
+        })
+    };
+
+    let handle_date_change = {
+        let date_filter = date_filter.clone();
+        Callback::from(move |e: InputEvent| {
+            let input: HtmlInputElement = e.target_unchecked_into();
+            let value = input.value();
+
+            if value.trim().is_empty() {
+                date_filter.set(None);
+            } else {
+                date_filter.set(Some(value));
+            }
+        })
+    };
+
+    let clear_date_filter = {
+        let date_filter = date_filter.clone();
+        Callback::from(move |_| {
+            date_filter.set(None);
+        })
+    };
+
+    let set_yesterday = {
+        let date_filter = date_filter.clone();
+        Callback::from(move |_| {
+            let mut date = Date::new_0();
+            let current_day = date.get_date();
+            date.set_date(current_day.saturating_sub(1));
+
+            let year = date.get_full_year() as i32;
+            let month = (date.get_month() + 1) as u32; // JS months are 0-based
+            let day = date.get_date() as u32;
+
+            let formatted = format!("{:04}-{:02}-{:02}", year, month, day);
+            date_filter.set(Some(formatted));
         })
     };
 
@@ -375,6 +414,22 @@ pub fn todo() -> Html {
         })
     };
 
+    let filtered_todos: Vec<TodoResponse> = {
+        let selected_date = (*date_filter).clone();
+        todos
+            .iter()
+            .filter(|todo| {
+                if let Some(ref date) = selected_date {
+                    todo.created_at.starts_with(date)
+                } else {
+                    true
+                }
+            })
+            .cloned()
+            .collect()
+    };
+    let has_filter = date_filter.is_some();
+
     html! {
     
         <div class="min-h-screen py-8 bg-gray-900">
@@ -409,17 +464,55 @@ pub fn todo() -> Html {
                     </form>
                 </div>
 
-                if todos.is_empty() && !*loading {
+                <div class="p-4 mb-6 bg-gray-800 rounded-lg shadow-md">
+                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-200">{"Filter by created date"}</p>
+                            <p class="text-xs text-gray-400">
+                                {if has_filter { "Showing todos for the selected date" } else { "Choose a date to only see todos created on that day" }}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input
+                                type="date"
+                                value={(*date_filter).clone().unwrap_or_default()}
+                                oninput={handle_date_change}
+                                class="px-3 py-2 text-sm text-white bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <button
+                                onclick={set_yesterday}
+                                class="px-3 py-2 text-sm font-semibold text-white bg-blue-700 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                {"Yesterday"}
+                            </button>
+                            <button
+                                onclick={clear_date_filter}
+                                disabled={!has_filter}
+                                class="px-3 py-2 text-sm font-semibold text-white bg-gray-700 border border-gray-600 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {"Clear"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                if filtered_todos.is_empty() && !*loading {
                     <div class="py-12 text-center">
                         <div class="mb-4 text-4xl">{"🎯"}</div>
-                        <h3 class="mb-2 text-xl font-semibold text-white">{"No todos yet!"}</h3>
-                        <p class="text-gray-400">{"Add your first todo above to get started"}</p>
+                        <h3 class="mb-2 text-xl font-semibold text-white">
+                            {if todos.is_empty() { "No todos yet!" } else { "No todos for this date" }}
+                        </h3>
+                        <p class="text-gray-400">
+                            {if todos.is_empty() { "Add your first todo above to get started" } else { "Try clearing or changing the date filter" }}
+                        </p>
                     </div>
                 } else {
-                    <div class="space-y-3">
-                        { for todos.iter().map(|todo| {
+                    <div class="max-h-[60vh] overflow-y-auto pr-1">
+                        <div class="space-y-3">
+                        { for filtered_todos.iter().map(|todo| {
                             let is_editing = *edit_todo_id == Some(todo.id);
                             let is_completed = todo.completed;
+                            let created_date = todo.created_at.split('T').next().unwrap_or("");
 
                             let delete_click = {
                                 let handle_delete = handle_delete_todo.clone();
@@ -505,6 +598,9 @@ pub fn todo() -> Html {
                                                         )}>
                                                             {if is_completed { "Completed" } else { "Pending" }}
                                                         </span>
+                                                        <span class="text-xs text-gray-400">
+                                                            {format!("Created: {}", created_date)}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             }
@@ -534,22 +630,23 @@ pub fn todo() -> Html {
                                 </div>
                             }
                         }) }
+                        </div>
                     </div>
                 }
 
-                if !todos.is_empty() {
+                if !filtered_todos.is_empty() {
                     <div class="p-6 mt-6 bg-gray-800 rounded-lg shadow-md">
                         <div class="grid grid-cols-3 gap-4 text-center">
                             <div class="p-4 bg-gray-700 rounded-lg">
-                                <div class="text-2xl font-bold text-blue-400">{todos.len()}</div>
+                                <div class="text-2xl font-bold text-blue-400">{filtered_todos.len()}</div>
                                 <div class="text-sm text-gray-400">{"Total"}</div>
                             </div>
                             <div class="p-4 bg-gray-700 rounded-lg">
-                                <div class="text-2xl font-bold text-green-400">{todos.iter().filter(|t| t.completed).count()}</div>
+                                <div class="text-2xl font-bold text-green-400">{filtered_todos.iter().filter(|t| t.completed).count()}</div>
                                 <div class="text-sm text-gray-400">{"Completed"}</div>
                             </div>
                             <div class="p-4 bg-gray-700 rounded-lg">
-                                <div class="text-2xl font-bold text-yellow-400">{todos.iter().filter(|t| !t.completed).count()}</div>
+                                <div class="text-2xl font-bold text-yellow-400">{filtered_todos.iter().filter(|t| !t.completed).count()}</div>
                                 <div class="text-sm text-gray-400">{"Pending"}</div>
                             </div>
                         </div>

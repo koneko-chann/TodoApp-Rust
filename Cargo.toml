@@ -19,6 +19,7 @@ yew = { git = "https://github.com/yewstack/yew/", features = ["csr"] }
 yew-router = { git = "https://github.com/yewstack/yew.git" }
 wasm-bindgen-futures = "0.4.55"
 web-sys = "0.3.82"
+js-sys = "0.3.82"
 jsonwebtoken = { version = "10", features = ["rust_crypto"] }
 chrono="0.4.26"
 
